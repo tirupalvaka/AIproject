@@ -1,0 +1,14 @@
+{
+  "name": "Digital Readiness Live",
+  "id": "digital-readiness-live-plugin",
+  "api": "1.0.0",
+  "editorType": ["figma"],
+  "main": "code.js",
+  "ui": "ui.html",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://aix-voice-service-gbczb3badydydcgu.eastus2-01.azurewebsites.net"
+    ]
+  }
+}
+

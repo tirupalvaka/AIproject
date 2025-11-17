@@ -1,0 +1,106 @@
+// code.js – Figma plugin controller
+
+// Show the UI panel
+figma.showUI(__html__, { width: 320, height: 220 });
+
+// Helper: load whatever font the text node is using
+async function ensureFontsLoaded(node) {
+  if (node.type !== "TEXT") return;
+
+  // Node may have a single font or mixed fonts
+  if (node.fontName === figma.mixed) {
+    const len = node.characters.length;
+    const fonts = node.getRangeAllFontNames(0, len);
+    for (const f of fonts) {
+      await figma.loadFontAsync(f);
+    }
+  } else {
+    await figma.loadFontAsync(node.fontName);
+  }
+}
+
+// When the UI sends updated data, sync it into the Figma frame
+figma.ui.onmessage = async (msg) => {
+  if (msg.type !== "update-score") return;
+
+  const data = msg.payload;
+  if (!data) return;
+
+  const { total_105, level, maturity, customer, participant_name } = data;
+
+  // Expect these layer names in your AI Readiness frame:
+  //   AI_SCORE_VALUE           (TEXT)
+  //   AI_LEVEL_LABEL           (TEXT)
+  //   AI_CUSTOMER_PARTICIPANT  (TEXT)
+  //   AI_GAUGE_ARC             (VECTOR/ELLIPSE/RECTANGLE)
+
+  const scoreNode = figma.currentPage.findOne(
+    (n) => n.type === "TEXT" && n.name === "AI_SCORE_VALUE"
+  );
+  const levelNode = figma.currentPage.findOne(
+    (n) => n.type === "TEXT" && n.name === "AI_LEVEL_LABEL"
+  );
+  const custPartNode = figma.currentPage.findOne(
+    (n) => n.type === "TEXT" && n.name === "AI_CUSTOMER_PARTICIPANT"
+  );
+  const arcNode = figma.currentPage.findOne(
+    (n) =>
+      (n.type === "VECTOR" ||
+        n.type === "ELLIPSE" ||
+        n.type === "RECTANGLE") && n.name === "AI_GAUGE_ARC"
+  );
+
+  function levelToColor(lvl) {
+    // 5: bright green, 4: green, 3: yellow, 2: orange, 1: red
+    switch (lvl) {
+      case 5:
+        return { r: 0.27, g: 0.78, b: 0.39 }; // #45C463
+      case 4:
+        return { r: 0.37, g: 0.67, b: 0.3 }; // duller green
+      case 3:
+        return { r: 0.97, g: 0.84, b: 0.35 }; // yellow
+      case 2:
+        return { r: 0.98, g: 0.68, b: 0.26 }; // orange
+      default:
+        return { r: 0.9, g: 0.23, b: 0.23 }; // red
+    }
+  }
+
+  // --- Update SCORE ---
+  if (scoreNode && scoreNode.type === "TEXT") {
+    await ensureFontsLoaded(scoreNode);
+    scoreNode.characters = String(total_105 ?? "");
+  }
+
+  // --- Update LEVEL / MATURITY label ---
+  if (levelNode && levelNode.type === "TEXT") {
+    await ensureFontsLoaded(levelNode);
+    const lvl = level ?? "";
+    const mat = maturity ?? "";
+    levelNode.characters = `Level ${lvl} · ${mat}`;
+  }
+
+  // --- Update CUSTOMER / PARTICIPANT label ---
+  if (custPartNode && custPartNode.type === "TEXT") {
+    await ensureFontsLoaded(custPartNode);
+    const cust = customer || "";
+    const part = participant_name || "";
+    custPartNode.characters = `Customer: ${cust} · Participant: ${part}`;
+  }
+
+  // --- Update GAUGE ARC color ---
+  if (arcNode) {
+    const color = levelToColor(level);
+    const fills = clone(arcNode.fills);
+    if (Array.isArray(fills) && fills.length > 0) {
+      fills[0].color = color;
+      arcNode.fills = fills;
+    }
+  }
+};
+
+// Helper because figma.fills etc are readonly
+function clone(val) {
+  return JSON.parse(JSON.stringify(val));
+}
+

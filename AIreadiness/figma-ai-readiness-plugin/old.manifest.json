@@ -1,0 +1,15 @@
+{
+  "name": "AI Readiness Live Dial",
+  "id": "ai-readiness-live-dial",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "http://localhost:7071",
+      "https://aix-voice-service-gbczb3badydydcgu.eastus2-01.azurewebsites.net"
+    ]
+  }
+}
+
