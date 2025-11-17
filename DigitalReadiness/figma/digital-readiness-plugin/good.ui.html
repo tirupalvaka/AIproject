@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Digital Readiness – Live</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      color: #111827;
+      background: #f9fafb;
+    }
+
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+
+    h1 span.icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 3px;
+      padding: 5px 7px;
+      border-radius: 6px;
+      border: 1px solid #d4d4d8;
+      font-size: 12px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #0f766e;
+      box-shadow: 0 0 0 1px rgba(15,118,110,0.15);
+    }
+
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #0f766e;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: #6b7280;
+      font-size: 11px;
+    }
+
+    .status {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .status.error {
+      color: #b91c1c;
+    }
+
+    .card {
+      margin-top: 14px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .score-block {
+      min-width: 80px;
+      text-align: left;
+    }
+
+    .score-value {
+      font-size: 32px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .score-label {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .level-line {
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    .level-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .level-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .details {
+      flex: 1;
+      font-size: 11px;
+      color: #374151;
+    }
+
+    .details-row {
+      margin-top: 4px;
+    }
+
+    .details-row span.label {
+      font-weight: 500;
+      color: #4b5563;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <span class="icon">&lt;/&gt;</span>
+    Digital Readiness Live
+  </h1>
+
+  <label>
+    Customer
+    <input id="customer" value="Contoso" />
+  </label>
+
+  <label>
+    Participant
+    <input id="participant" value="Alex Doe" />
+  </label>
+
+  <label>
+    API base URL
+    <input
+      id="apiBase"
+      value="https://aix-voice-service-gbczb3badydydcgu.eastus2-01.azurewebsites.net"
+    />
+  </label>
+
+  <button id="fetchBtn">Fetch latest score</button>
+
+  <div id="status" class="status">Waiting to fetch…</div>
+
+  <div id="cardContainer"></div>
+
+  <script>
+    const btn = document.getElementById("fetchBtn");
+    const statusEl = document.getElementById("status");
+    const cardContainer = document.getElementById("cardContainer");
+
+    function setStatus(msg, isError = false) {
+      statusEl.textContent = msg;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function getLevelColor(level) {
+      if (level <= 1) return "#b91c1c";     // red
+      if (level === 2) return "#d97706";    // amber
+      if (level === 3) return "#a3e635";    // lime / partial green
+      return "#22c55e";                     // green for level 4+
+    }
+
+    function renderCard(data, customer, participant) {
+      const color = getLevelColor(data.level || 0);
+      const percent = data.percent != null
+        ? data.percent.toFixed(2)
+        : ((data.score / (data.max || 1)) * 100).toFixed(2);
+
+      const ts = data.timestamp
+        ? data.timestamp
+        : "--";
+
+      cardContainer.innerHTML = `
+        <div class="card">
+          <div class="score-block">
+            <div class="score-value" style="color:${color}">
+              ${Math.round(data.percent || (data.score / (data.max || 1) * 100))}
+            </div>
+            <div class="score-label">
+              Percent · 0 – 100
+            </div>
+            <div class="level-line">
+              <span class="level-pill" style="background:${color}1a;color:${color}">
+                <span class="level-pill-dot"></span>
+                Level ${data.level || "—"} · ${data.maturity || "—"}
+              </span>
+            </div>
+          </div>
+
+          <div class="details">
+            <div class="details-row">
+              <span class="label">Raw score:</span>
+              ${data.score} / ${data.max}
+            </div>
+            <div class="details-row">
+              <span class="label">Customer:</span>
+              ${customer} · <span class="label">Participant:</span> ${participant}
+            </div>
+            <div class="details-row muted" style="margin-top:8px;">
+              Last updated: ${ts}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function fetchScore() {
+      const customer = document.getElementById("customer").value.trim();
+      const participant = document.getElementById("participant").value.trim();
+      const apiBase = document.getElementById("apiBase").value.trim();
+
+      if (!customer || !participant || !apiBase) {
+        setStatus("Please fill all fields.", true);
+        return;
+      }
+
+      const url =
+        apiBase.replace(/\/$/, "") +
+        `/api/digital_readiness_latest_live?customer=${encodeURIComponent(
+          customer
+        )}&participant=${encodeURIComponent(participant)}`;
+
+      btn.disabled = true;
+      setStatus("Fetching latest digital readiness…", false);
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+
+        // Expecting: { score, max, percent, level, maturity, timestamp }
+        renderCard(data, customer, participant);
+        setStatus("Fetched successfully ✔", false);
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to fetch data: " + err.message, true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener("click", fetchScore);
+
+    // Auto-fetch once on load with defaults
+    fetchScore();
+  </script>
+</body>
+</html>
+

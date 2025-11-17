@@ -1,0 +1,28 @@
+{
+  "session_id": "session_001",
+  "assessment_type": "DigitalReadiness",
+  "timestamp": "2024-06-01T12:00:00Z",
+  "customer": "KPMG",
+  "industry": "Consulting",
+  "participant_name": "Tiru",
+  "participant_role": "AI Architect",
+  "org": "KPMG",
+  "domains": [
+    {
+      "name": "Strategy & Alignment",
+      "score": 4,
+      "questions": [
+        {
+          "question": "Does your organization have a clearly defined digital strategy?",
+          "score": 4,
+          "notes": "Defined and reviewed annually",
+          "target": 5,
+          "gap": 1,
+          "priority": "Medium"
+        }
+      ]
+    }
+  ],
+  "overall_score_500": 350,
+  "notes": "Sample test from cURL"
+}

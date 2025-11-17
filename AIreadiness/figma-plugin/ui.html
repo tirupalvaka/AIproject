@@ -1,0 +1,19 @@
+<script>
+async function loadData() {
+  const resp = await fetch("https://aix-voice-service-xxxx.azurewebsites.net/api/ai_readiness_latest");
+  const data = await resp.json();
+
+  document.getElementById("score").innerText = data.total_105;
+  document.getElementById("level").innerText = data.level;
+  document.getElementById("maturity").innerText = data.maturity;
+}
+setInterval(loadData, 5000); // 🔴 live updates every 5 seconds
+loadData();
+</script>
+
+<div style="font-size:20px">
+  AI Readiness Score: <span id="score"></span><br>
+  Level: <span id="level"></span><br>
+  Maturity: <span id="maturity"></span>
+</div>
+

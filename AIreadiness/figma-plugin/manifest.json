@@ -1,0 +1,13 @@
+{
+  "name": "AI Readiness Live",
+  "id": "ai-readiness-live-plugin",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "permissions": ["currentuser"],
+  "networkAccess": {
+    "allowedDomains": ["*"], 
+    "reasoning": "Fetch AI readiness data from Azure Function"
+  }
+}
+

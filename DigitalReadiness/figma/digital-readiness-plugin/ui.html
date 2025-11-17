@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Digital Readiness Live</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 12px;
+      font-size: 12px;
+      color: #111827;
+    }
+    h1 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 10px;
+    }
+    .icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      color: white;
+      font-size: 11px;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 2px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #d4d4d8;
+      font-size: 12px;
+    }
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #0f766e;
+      color: white;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 11px;
+    }
+    .row label {
+      margin-top: 0;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .hint {
+      margin-top: 8px;
+      color: #6b7280;
+      font-size: 11px;
+    }
+    .status {
+      margin-top: 6px;
+      font-size: 11px;
+    }
+    .status.success { color: #15803d; }
+    .status.error { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>
+    <span class="icon">&lt;/&gt;</span>
+    Digital Readiness Live
+  </h1>
+
+  <label>
+    Customer
+    <input id="customer" type="text" value="Contoso" />
+  </label>
+
+  <label>
+    Participant
+    <input id="participant" type="text" value="Alex Doe" />
+  </label>
+
+  <label>
+    API base URL
+    <input
+      id="apiBase"
+      type="text"
+      value="https://aix-voice-service-gbczb3badydydcgu.eastus2-01.azurewebsites.net"
+    />
+  </label>
+
+  <div class="row">
+    <label>
+      <input id="live" type="checkbox" />
+      Enable auto-refresh (every 30s)
+    </label>
+  </div>
+
+  <button id="apply">Fetch latest score</button>
+
+  <div class="hint">
+    Select the frame that contains text layers named:<br />
+    <strong>DigitalScore</strong>, <strong>DigitalPercent</strong>,<br />
+    <strong>DigitalLevel</strong>, <strong>DigitalRaw</strong>, <strong>DigitalUpdated</strong>.
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <script>
+    const btn = document.getElementById("apply");
+    const statusEl = document.getElementById("status");
+    const liveEl = document.getElementById("live");
+
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = "status " + (type || "");
+    }
+
+    function sendRequest() {
+      const customer = document.getElementById("customer").value.trim();
+      const participant = document.getElementById("participant").value.trim();
+      const apiBase = document.getElementById("apiBase").value.trim();
+      const live = liveEl.checked;
+
+      if (!customer || !participant || !apiBase) {
+        setStatus("Please fill all fields.", "error");
+        return;
+      }
+
+      setStatus(
+        live ? "Fetching and enabling live refresh…" : "Fetching latest digital readiness…",
+        ""
+      );
+      btn.disabled = true;
+
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "apply-digital-readiness",
+            customer,
+            participant,
+            apiBase,
+            live
+          }
+        },
+        "*"
+      );
+    }
+
+    btn.onclick = sendRequest;
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === "status") {
+        setStatus(msg.text, msg.error ? "error" : "success");
+        btn.disabled = false;
+        if (typeof msg.live === "boolean") {
+          liveEl.checked = msg.live;
+        }
+      }
+    };
+  </script>
+</body>
+</html>
+

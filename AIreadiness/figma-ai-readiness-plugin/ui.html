@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 12px;
+        font-size: 12px;
+      }
+      .value {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .status {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div><strong>AI Readiness – Live</strong></div>
+    <div class="value" id="score">–</div>
+    <div class="status" id="level">Level –</div>
+    <div class="status" id="cust">Customer: –</div>
+    <div class="status" id="time">Last updated: –</div>
+    <div class="status" id="error" style="color: #c00;"></div>
+
+    <script>
+      // Use local during dev; swap to Azure URL in production.
+      const API_URL = "http://localhost:7071/api/ai_readiness_latest";
+      const POLL_MS = 5000;
+
+      const elScore = document.getElementById("score");
+      const elLevel = document.getElementById("level");
+      const elCust = document.getElementById("cust");
+      const elTime = document.getElementById("time");
+      const elErr = document.getElementById("error");
+
+      function levelToColor(level) {
+        switch (level) {
+          case 5: return "#45C463";
+          case 4: return "#5FA856";
+          case 3: return "#F7D856";
+          case 2: return "#F5AD42";
+          default: return "#E63A3A";
+        }
+      }
+
+      async function fetchOnce() {
+        try {
+          elErr.textContent = "";
+          const res = await fetch(API_URL);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const data = await res.json();
+
+          const {
+            total_105,
+            level,
+            maturity,
+            customer,
+            participant_name,
+            timestamp,
+          } = data;
+
+          // Update mini UI
+          elScore.textContent = total_105 ?? "–";
+          elLevel.textContent = `Level ${level ?? "–"} · ${
+            maturity ?? ""
+          }`;
+          elCust.textContent = `Customer: ${customer ?? "–"} · Participant: ${
+            participant_name ?? "–"
+          }`;
+          elTime.textContent = `Last updated: ${timestamp ?? "–"}`;
+          elScore.style.color = levelToColor(level);
+
+          // Tell main plugin to sync into the Figma frame
+          parent.postMessage(
+            { pluginMessage: { type: "update-score", payload: data } },
+            "*"
+          );
+        } catch (err) {
+          console.error(err);
+          elErr.textContent = "Error: " + err.message;
+        }
+      }
+
+      // Start polling
+      fetchOnce();
+      setInterval(fetchOnce, POLL_MS);
+    </script>
+  </body>
+</html>
+
