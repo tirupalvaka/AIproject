@@ -1,0 +1,65 @@
+{
+  "openapi": "3.0.1",
+  "info": { "title": "AIX Scoring Webhook", "version": "1.0.0" },
+  "paths": {
+    "/api/score_and_push": {
+      "post": {
+        "operationId": "score_and_push",
+        "summary": "Push a completed interview to ADX",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Azure Functions key (omit when calling local dev endpoint)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "session_id","assessment_type","timestamp","customer","industry",
+                  "participant_name","participant_role","org","domains","overall_score_500","notes"
+                ],
+                "properties": {
+                  "session_id": { "type": "string" },
+                  "assessment_type": { "type": "string", "example": "AIX" },
+                  "timestamp": { "type": "string", "format": "date-time" },
+                  "customer": { "type": "string" },
+                  "industry": { "type": "string" },
+                  "participant_name": { "type": "string" },
+                  "participant_role": { "type": "string" },
+                  "org": { "type": "string" },
+                  "domains": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name","score"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "score": { "type": "number" }
+                      }
+                    }
+                  },
+                  "overall_score_500": { "type": "number" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Accepted – queued for ADX ingest" },
+          "400": { "description": "Bad request (validation failed)" },
+          "502": { "description": "ADX ingest error" },
+          "500": { "description": "Unhandled server error" }
+        }
+      }
+    }
+  }
+}
+

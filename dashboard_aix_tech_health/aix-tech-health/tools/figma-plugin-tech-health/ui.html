@@ -1,0 +1,11 @@
+<!doctype html><html><body style="margin:12px;font:12px sans-serif">
+  <div id="status">Ready</div>
+  <button id="refresh">Refresh</button>
+  <script>
+    document.getElementById('refresh').onclick = () => parent.postMessage({pluginMessage:{type:'refresh'}}, '*');
+    onmessage = (e) => { if (e.data.pluginMessage?.type==='status') {
+      document.getElementById('status').textContent = e.data.pluginMessage.text;
+    }};
+  </script>
+</body></html>
+

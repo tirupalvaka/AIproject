@@ -1,0 +1,25 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    // --- ADX / Kusto ingest settings ---
+    "KUSTO_INGEST_URI": "https://ingest-aix-dts.eastus2.kusto.windows.net",
+    "ADX_DATABASE": "aixdb",
+    "ADX_TABLE": "aix_scores",
+    "ADX_MAPPING": "aix_scores_json"
+
+    // If you prefer the canonical host style, you can use:
+    // "KUSTO_INGEST_URI": "https://ingest-aix-dts.eastus2.kusto.windows.net"
+
+    // --- Optional: use a Service Principal locally (DefaultAzureCredential will pick these up) ---
+    // "AZURE_TENANT_ID": "<your-tenant-id>",
+    // "AZURE_CLIENT_ID": "<your-app-client-id>",
+    // "AZURE_CLIENT_SECRET": "<your-app-client-secret>"
+
+    // --- Optional: tweak logging ---
+    // "logging__logLevel__Function": "Information"
+  }
+}
+

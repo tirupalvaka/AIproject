@@ -1,0 +1,8 @@
+azure-functions
+azure-identity
+azure-kusto-data==4.4.0
+azure-kusto-data
+azure-kusto-ingest
+msal
+requests
+python-dateutil

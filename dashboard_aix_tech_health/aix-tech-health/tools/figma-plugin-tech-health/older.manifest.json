@@ -1,0 +1,18 @@
+{
+  "name": "Technical Health Live Bind",
+  "id": "tech-health-live-bind",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "relaunchButtons": [
+    { "command": "run", "name": "Update Technical Health" }
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://openapi-dts.azure-api.net",
+      "https://a32988a6b6d6.ngrok-free.app"
+    ],
+    "reasoning": "Fetch Technical Health metrics from production and from the local function via HTTPS tunnel."
+  }
+}
+

@@ -1,0 +1,14 @@
+{
+  "name": "Technical Health Live Bind",
+  "id": "tech-health-live-bind",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "relaunchButtons": [{ "command": "run", "name": "Update Technical Health" }],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://aix-voice-service-gbczb3badydydcgu.eastus2-01.azurewebsites.net"
+    ],
+    "reasoning": "Fetch live Technical Health from Azure Functions."
+  }
+}
